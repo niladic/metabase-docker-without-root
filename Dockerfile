@@ -6,11 +6,20 @@ ENV LC_CTYPE en_US.UTF-8
 # dependencies
 RUN apk add --update --no-cache bash ttf-dejavu fontconfig
 
-# add Metabase jar
-COPY ./metabase.jar /app/
+
+
+ENV MGID=2000
+ENV MUID=2000
+
+RUN addgroup -g $MGID -S metabase
+RUN adduser -D -u $MUID -G metabase metabase
+
+ADD --chown=metabase:metabase https://downloads.metabase.com/v0.36.4/metabase.jar /app/
 
 # add our run script to the image
 COPY ./run_metabase.sh /app/
+RUN chown metabase:metabase /app/run_metabase.sh
+RUN chmod +x /app/run_metabase.sh
 
 # create the plugins directory, with writable permissions
 RUN mkdir -p /plugins
@@ -23,6 +32,18 @@ EXPOSE 3000
 # instance with, mount it in the container as a volume that will match the
 # pattern /app/initial*.db:
 # $ docker run ... -v $PWD/metabase.db.mv.db:/app/initial.db.mv.db ...
+
+
+
+ENV MB_DB_DIR=/metabase-data
+ENV MB_DB_FILE=/metabase-data/metabase.db
+
+RUN mkdir $MB_DB_DIR
+RUN chown metabase:metabase $MB_DB_DIR
+
+
+USER metabase
+
 
 # run it
 ENTRYPOINT ["/app/run_metabase.sh"]
