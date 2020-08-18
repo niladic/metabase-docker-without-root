@@ -14,7 +14,8 @@ ENV MUID=2000
 RUN addgroup -g $MGID -S metabase
 RUN adduser -D -u $MUID -G metabase metabase
 
-ADD --chown=metabase:metabase https://downloads.metabase.com/v0.36.4/metabase.jar /app/
+ADD https://downloads.metabase.com/v0.36.4/metabase.jar /app/
+RUN chown metabase:metabase /app/metabase.jar
 
 # add our run script to the image
 COPY ./run_metabase.sh /app/
